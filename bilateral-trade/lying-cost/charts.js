@@ -48,7 +48,12 @@
       });
       appendSvg(svg, "title", {}, def.title.replace(/\\[()]/g, ""));
       var description = appendSvg(svg, "desc", { id: "description-" + def.id });
-      var raster = appendSvg(svg, "image", { x: LAYOUT.left, y: LAYOUT.top, width: SIZE, height: SIZE, preserveAspectRatio: "none" });
+      var vectorRegions = index < 3 || def.id === "efficiency";
+      var field = appendSvg(svg, vectorRegions ? "svg" : "image", {
+        x: LAYOUT.left, y: LAYOUT.top, width: SIZE, height: SIZE,
+        preserveAspectRatio: "none", "data-layer": "field"
+      });
+      if (vectorRegions) { field.setAttribute("viewBox", "0 0 1 1"); }
       var ticks = appendSvg(svg, "g", { "data-layer": "frame" });
       var overlays = appendSvg(svg, "g", { "data-layer": "overlay" });
       var labels = def.domain === "buyer" ? ["True buyer value, \\(v\\)", "Alternate buyer report, \\(r\\)"] :
@@ -68,7 +73,7 @@
       status.className = "diagnostic-text field-status";
       if (index >= 3) { container.appendChild(status); }
       (index < 3 ? surfaceContainer : diagnosticContainer).appendChild(container);
-      var panel = { def: def, svg: svg, raster: raster, ticks: ticks, overlays: overlays, description: description,
+      var panel = { def: def, svg: svg, field: field, ticks: ticks, overlays: overlays, description: description,
         readout: readout, status: status, selected: [0.5, 0.5], visible: false, key: "", resolution: 0, main: index < 3 };
       function setProbe(x, y, announce) {
         panel.selected = [Math.max(0, Math.min(1, x)), Math.max(0, Math.min(1, y))];
@@ -103,7 +108,8 @@
         symbol: panel.def.symbol, subscript: panel.def.subscript, label: panel.def.label, value: visuals.formatProbe(value)
       });
     }
-    function regionImage(def, resolution) {
+    function drawRegions(field, def, resolution) {
+      var prefix = "lying-cost-" + def.id + "-";
       var edge = 1 - rule.epsilon;
       var tradePoints = edge + ",1 1,1 1," + edge;
       var noTradePoints = "0,0 1,0 1," + edge + " " + edge + ",1 0,1";
@@ -114,11 +120,11 @@
       } else if (rule.id === "split-the-difference") {
         // In the trade triangle, the midpoint payment is (v+c)/2. A vector
         // gradient gives this linear field and its exact boundary at every size.
-        content = '<defs><linearGradient id="midpoint" gradientUnits="userSpaceOnUse" x1="0" y1="' +
+        content = '<defs><linearGradient id="' + prefix + 'midpoint" gradientUnits="userSpaceOnUse" x1="0" y1="' +
           rule.sellerSupport[1] + '" x2="1" y2="' + (rule.sellerSupport[1] - 1) + '">' +
           '<stop offset="0" stop-color="rgb(' + colors.green.join(",") + ')" stop-opacity="0"/>' +
           '<stop offset="1" stop-color="rgb(' + colors.green.join(",") + ')" stop-opacity="1"/>' +
-          '</linearGradient></defs><polygon points="' + tradePoints + '" fill="url(#midpoint)"/>';
+          '</linearGradient></defs><polygon points="' + tradePoints + '" fill="url(#' + prefix + 'midpoint)"/>';
       } else {
         // Each payment branch varies along one axis. Sample that smooth color
         // field separately, then let vector clips draw the exact jump at v=c.
@@ -140,19 +146,17 @@
           context.putImageData(pixels, 0, 0);
           return canvas.toDataURL();
         }
-        content = '<defs><clipPath id="trade" clipPathUnits="userSpaceOnUse"><polygon points="' + tradePoints +
-          '"/></clipPath><clipPath id="no-trade" clipPathUnits="userSpaceOnUse"><polygon points="' + noTradePoints +
+        content = '<defs><clipPath id="' + prefix + 'trade" clipPathUnits="userSpaceOnUse"><polygon points="' + tradePoints +
+          '"/></clipPath><clipPath id="' + prefix + 'no-trade" clipPathUnits="userSpaceOnUse"><polygon points="' + noTradePoints +
           '"/></clipPath></defs>';
         [false, true].forEach(function (trades) {
-          content += '<image width="1" height="1" preserveAspectRatio="none" clip-path="url(#' +
+          content += '<image width="1" height="1" preserveAspectRatio="none" clip-path="url(#' + prefix +
             (trades ? "trade" : "no-trade") + ')" href="' + texture(trades) + '"/>';
         });
       }
-      // Self-contained SVG images stay offline-safe and retain vector edges at
-      // every responsive size, even while the color textures use preview quality.
-      return "data:image/svg+xml," + encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="380" height="380" viewBox="0 0 1 1" preserveAspectRatio="none">' + content + '</svg>'
-      );
+      // Inline geometry paints with the boundary overlay in the same frame.
+      // An SVG image data URL may finish decoding only after that frame.
+      field.innerHTML = content;
     }
     function draw(panel, resolution, force) {
       var def = panel.def;
@@ -164,10 +168,10 @@
       var domain = domains(def, rule);
       var vectorRegions = panel.main || def.id === "efficiency";
       if (vectorRegions) {
-        panel.raster.setAttribute("href", regionImage(def, resolution));
+        drawRegions(panel.field, def, resolution);
       } else {
         var money = def.id === "revenue";
-        panel.raster.setAttribute("href", global.SvgUtils.createFieldRaster(resolution, function (x, y) {
+        panel.field.setAttribute("href", global.SvgUtils.createFieldRaster(resolution, function (x, y) {
           return rule.field(def.id, domain[0][0] + x, domain[1][0] + y);
         }, function (value) {
           return visuals.signedChannels(value, def.extent,
@@ -176,8 +180,8 @@
       }
       panel.key = key;
       panel.resolution = resolution;
-      panel.raster.dataset.edgeRenderer = vectorRegions ? "vector-regions" : "raster";
-      panel.raster.dataset.resolution = resolution;
+      panel.field.dataset.edgeRenderer = vectorRegions ? "vector-regions" : "raster";
+      panel.field.dataset.resolution = resolution;
       panel.ticks.replaceChildren();
       (panel.main ? [0, 0.25, 0.5, 0.75, 1] : [0, 1]).forEach(function (t) {
         var px = LAYOUT.left + t * SIZE, py = LAYOUT.bottom - t * SIZE;

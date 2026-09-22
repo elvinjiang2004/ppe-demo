@@ -22,7 +22,28 @@
   <main id="main-content" class="page-width">
     <section class="introduction" aria-labelledby="page-title">
       <h1 id="page-title">Bilateral Trade with a Lying Cost</h1>
-      <!-- Introduction reserved for the author. -->
+      <p>
+        Myerson and Satterthwaite (1983) show that the efficient allocation rule
+        is impossible to implement in the standard setting across all
+        buyer-seller distributions with a positive-length intersection. But
+        what if lying is costly for agents? Formally, I model a lying cost in
+        a direct bargaining mechanism by a disutility of
+        \(\gamma\lvert t-t'\rvert\) where \(t\) is an agent's true value and
+        \(t'\) is his/her reported value. How does this affect the
+        implementability of the efficient allocation rule? It turns out, for
+        a sufficiently high lying cost parameter \(\gamma\), the efficient
+        allocation rule can be implemented for any distributions. This and
+        more are discussed and shown in my paper
+        <a href="../../assets/papers/Bilateral_Trade_with_a_Lying_Cost.pdf">Bilateral Trade with a Lying Cost</a>.
+      </p>
+      <p>
+        In the interactive demo, we consider a specific example with the buyer
+        value \(V\sim\operatorname{Uniform}[0,1]\) and the seller value
+        \(C\sim\operatorname{Uniform}[1-\epsilon,2-\epsilon]\) with
+        \(0&lt;\epsilon\leq 1\). Adjust the lying cost parameter and the value
+        supports' overlap to see when the efficient allocation rule is
+        implementable for various mechanism constructions.
+      </p>
     </section>
     <section id="lying-cost-explorable" class="explorable explorable-divider" aria-label="Lying-cost mechanism preset">
       <aside class="sandbox-toolbar" aria-label="Mechanism parameters">
@@ -50,9 +71,9 @@
         <p id="input-error" class="control-status" role="alert"></p>
       </aside>
       <div class="color-legends" role="group" aria-label="Plot color scales">
-        <div class="color-legend"><span class="color-legend-title">Utility</span><span class="color-scale-bar utility-gradient"></span><div class="color-scale-ticks"><span>Negative</span><span>0</span><span>Positive</span></div></div>
-        <div class="color-legend"><span class="color-legend-title">Payment / revenue</span><span class="color-scale-bar payment-gradient"></span><div class="color-scale-ticks"><span>Negative</span><span>0</span><span>Positive</span></div></div>
         <div class="color-legend"><span class="color-legend-title">Allocation</span><span class="color-scale-bar allocation-gradient"></span><div class="color-scale-ticks"><span>0</span><span>1</span></div></div>
+        <div class="color-legend"><span class="color-legend-title">Payment / revenue</span><span class="color-scale-bar payment-gradient"></span><div class="color-scale-ticks"><span>Negative</span><span>0</span><span>Positive</span></div></div>
+        <div class="color-legend"><span class="color-legend-title">Utility</span><span class="color-scale-bar utility-gradient"></span><div class="color-scale-ticks"><span>Negative</span><span>0</span><span>Positive</span></div></div>
       </div>
       <div id="surfaces" class="surface-editor-grid" aria-label="Allocation and payment rules"></div>
       <div id="diagnostics" class="diagnostic-panel-grid sandbox-diagnostic-grid" aria-label="Mechanism diagnostics"></div>
@@ -60,7 +81,40 @@
       <p id="live-status" class="sr-only" role="status" aria-live="polite"></p>
       <p id="probe-announcement" class="sr-only" aria-live="polite"></p>
     </section>
-    <!-- Post-demo text reserved for the author. -->
+    <section class="derivation mechanism-details" aria-labelledby="mechanism-details-title">
+      <h2 id="mechanism-details-title">Mechanism Details</h2>
+      <div
+        class="mechanism-details-table-region"
+        role="region"
+        aria-labelledby="mechanism-details-title"
+        tabindex="0"
+      >
+        <table class="mechanism-details-table">
+          <thead>
+            <tr>
+              <th scope="col">Mechanism</th>
+              <th scope="col">Allocation rule</th>
+              <th scope="col">Buyer's payment rule</th>
+              <th scope="col">Seller's payment rule</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Minimum-rent efficient mechanism</th>
+              <td>\(\mathbb{1}(v\geq c)\)</td>
+              <td>\(v q(v,c)-\frac{1}{2}\max\{v-1+\epsilon-\gamma,0\}^{2}\)</td>
+              <td>\(c q(v,c)+\frac{1}{2}\max\{1-c-\gamma,0\}^{2}\)</td>
+            </tr>
+            <tr>
+              <th scope="row">Split-the-difference</th>
+              <td>\(\mathbb{1}(v\geq c)\)</td>
+              <td>\(\frac{v+c}{2}q(v,c)\)</td>
+              <td>\(\frac{v+c}{2}q(v,c)\)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
     <section class="notes" aria-labelledby="notes-title">
       <h2 id="notes-title">Notes</h2>
       <!-- Notes reserved for the author. -->
