@@ -1,0 +1,16 @@
+/* Geometry and primitives from the reference sandbox's 480 by 520 plots. */
+.chart-viewport { display: flow-root; width: 100%; min-width: 0; padding-block: 14px; overflow: hidden; }
+.chart-viewport:focus-within { outline: 3px solid var(--focus); outline-offset: 3px; }
+.chart-viewport svg:focus-visible { outline: none; }
+.math-chart-figure > figcaption { min-height: 1.25rem; }
+.math-chart-frame { position: relative; }
+.math-chart-frame > svg { position: relative; z-index: 1; display: block; width: 100%; height: auto; }
+.math-chart-axis-label { position: absolute; margin: 0; color: var(--ink); font-family: var(--text-font); font-size: clamp(9px, 1.82vw, 12px); font-weight: 700; line-height: 1; white-space: nowrap; pointer-events: none; }
+.math-chart-x-axis-label { right: 0; bottom: 3%; left: 0; text-align: center; }
+.math-chart-y-axis-label { transform: translate(-50%, -50%) rotate(-90deg); transform-origin: center; }
+.chart-480x520-x-axis-label { bottom: 7%; left: 8.333%; }
+.chart-480x520-y-axis-label { top: 44.231%; left: 3.333%; }
+.math-chart-axis-label mjx-container { margin: 0; }
+.axis-line { stroke: var(--axis); stroke-width: 1.1; }
+.axis-text { fill: var(--muted); font-family: var(--text-font); font-size: 12px; font-variant-numeric: tabular-nums; }
+.sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0,0,0,0) !important; white-space: nowrap !important; border: 0 !important; }

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Bilateral Trade with a Lying Cost: gamma, support overlap, and efficient trade.">
+  <title>Bilateral Trade with a Lying Cost | Personal Projects Explorer</title>
+  <link rel="stylesheet" href="../../styles.css"><link rel="stylesheet" href="../../css/trade-demo.css"><link rel="stylesheet" href="module.css">
+  <script defer src="../../js/components.js"></script>
+  <script defer src="../../js/mathjax-config.js"></script>
+  <script defer src="../../assets/mathjax/tex-svg.js"></script>
+  <script defer src="../../js/mathjax-runtime.js"></script>
+  <script defer src="../../js/math-utils.js"></script>
+  <script defer src="../../js/svg-utils.js"></script>
+  <script defer src="../../js/chart-viewport.js"></script>
+  <script defer src="../../js/bilateral-trade-visuals.js"></script>
+  <script defer src="../../js/trade-demo-style.js"></script>
+  <script defer src="model.js"></script><script defer src="charts.js"></script><script defer src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="site-header"><page-header home="../../index.html" category="Bilateral Trade"></page-header></header>
+  <main id="main-content" class="page-width">
+    <section class="introduction" aria-labelledby="page-title">
+      <h1 id="page-title">Bilateral Trade with a Lying Cost</h1>
+      <!-- Introduction reserved for the author. -->
+    </section>
+    <section id="lying-cost-explorable" class="explorable explorable-divider" aria-label="Lying-cost mechanism preset">
+      <aside class="sandbox-toolbar" aria-label="Mechanism parameters">
+        <div id="preset-buttons" class="preset-buttons" role="group" aria-labelledby="preset-buttons-label">
+          <span id="preset-buttons-label" class="preset-buttons-label">Presets:</span>
+        </div>
+        <div class="sandbox-action-row">
+          <div class="range-group sandbox-parameter-control">
+            <div class="range-label-row">
+              <label id="gamma-label" for="gamma-slider">Lying cost, \(\gamma\)</label>
+              <input id="gamma-number" class="range-number-input" type="number" min="0" max="1" step="any" value="0.25" inputmode="decimal" aria-labelledby="gamma-label" aria-describedby="input-error">
+            </div>
+            <input id="gamma-slider" class="slider-220" type="range" min="0" max="1" step="0.01" value="0.25" aria-labelledby="gamma-label">
+            <div class="range-endpoints slider-220" aria-hidden="true"><span>0</span><span>1</span></div>
+          </div>
+          <div class="range-group sandbox-parameter-control">
+            <div class="range-label-row">
+              <label id="epsilon-label" for="epsilon-slider">Support overlap, \(\epsilon\)</label>
+              <input id="epsilon-number" class="range-number-input" type="number" min="0" max="1" step="any" value="1" inputmode="decimal" aria-labelledby="epsilon-label" aria-describedby="input-error">
+            </div>
+            <input id="epsilon-slider" class="slider-220" type="range" min="0" max="1" step="0.01" value="1" aria-labelledby="epsilon-label">
+            <div class="range-endpoints slider-220" aria-hidden="true"><span>0</span><span>1</span></div>
+          </div>
+        </div>
+        <p id="input-error" class="control-status" role="alert"></p>
+      </aside>
+      <div class="color-legends" role="group" aria-label="Plot color scales">
+        <div class="color-legend"><span class="color-legend-title">Utility</span><span class="color-scale-bar utility-gradient"></span><div class="color-scale-ticks"><span>Negative</span><span>0</span><span>Positive</span></div></div>
+        <div class="color-legend"><span class="color-legend-title">Payment / revenue</span><span class="color-scale-bar payment-gradient"></span><div class="color-scale-ticks"><span>Negative</span><span>0</span><span>Positive</span></div></div>
+        <div class="color-legend"><span class="color-legend-title">Allocation</span><span class="color-scale-bar allocation-gradient"></span><div class="color-scale-ticks"><span>0</span><span>1</span></div></div>
+      </div>
+      <div id="surfaces" class="surface-editor-grid" aria-label="Allocation and payment rules"></div>
+      <div id="diagnostics" class="diagnostic-panel-grid sandbox-diagnostic-grid" aria-label="Mechanism diagnostics"></div>
+      <p id="probe-help" class="sr-only">Move the pointer over a plot or focus it and use arrow keys to inspect values. Shift and arrow keys move in larger steps. Home and End select the horizontal endpoints. Escape hides the probe. Plots are read-only.</p>
+      <p id="live-status" class="sr-only" role="status" aria-live="polite"></p>
+      <p id="probe-announcement" class="sr-only" aria-live="polite"></p>
+    </section>
+    <!-- Post-demo text reserved for the author. -->
+    <section class="notes" aria-labelledby="notes-title">
+      <h2 id="notes-title">Notes</h2>
+      <!-- Notes reserved for the author. -->
+    </section>
+    <section class="references" aria-labelledby="references-title">
+      <h2 id="references-title">References</h2>
+      <ul class="reference-list">
+        <li>
+          Jiang, Elvin. <cite><a href="../../assets/papers/Bilateral_Trade_with_a_Lying_Cost.pdf">Bilateral Trade with a Lying Cost</a></cite>.
+          September 2026.
+        </li>
+      </ul>
+    </section>
+    <noscript><p>Enable JavaScript to use the interactive module.</p></noscript>
+  </main>
+  <footer class="site-footer"><page-footer></page-footer></footer>
+</body>
+</html>

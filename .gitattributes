@@ -1,0 +1,3 @@
+# Preserve exact source and website bytes across the independent repositories.
+* -text
+*.pdf binary
