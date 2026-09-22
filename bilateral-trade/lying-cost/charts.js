@@ -69,7 +69,7 @@
       if (index >= 3) { container.appendChild(status); }
       (index < 3 ? surfaceContainer : diagnosticContainer).appendChild(container);
       var panel = { def: def, svg: svg, raster: raster, ticks: ticks, overlays: overlays, description: description,
-        readout: readout, status: status, selected: [0.5, 0.5], visible: false, key: "", main: index < 3 };
+        readout: readout, status: status, selected: [0.5, 0.5], visible: false, key: "", resolution: 0, main: index < 3 };
       function setProbe(x, y, announce) {
         panel.selected = [Math.max(0, Math.min(1, x)), Math.max(0, Math.min(1, y))];
         panel.visible = true;
@@ -102,15 +102,6 @@
       visuals.appendProbeValueText(scaffold.group, scaffold.textX, scaffold.textY, {
         symbol: panel.def.symbol, subscript: panel.def.subscript, label: panel.def.label, value: visuals.formatProbe(value)
       });
-    }
-    function channels(def, x, y) {
-      if (def.id === "q" || def.id === "efficiency") {
-        // Match the sandbox's allocation base; this preset has no allocation mismatch.
-        return visuals.qChannels(colors, rule.q(x, y));
-      }
-      var money = def.id === "pB" || def.id === "pS" || def.id === "revenue";
-      return visuals.signedChannels(rule.field(def.id, x, y), def.extent,
-        money ? colors.red : colors.blue, money ? colors.green : colors.yellow);
     }
     function regionImage(def, resolution) {
       var edge = 1 - rule.epsilon;
@@ -167,31 +158,24 @@
       var def = panel.def;
       // The rule identity must invalidate every panel when a curated preset changes.
       var gammaDependent = rule.id === "minimum-rent" ? def.id !== "q" && def.id !== "efficiency" : Boolean(def.domain);
-      var key = rule.id + ":" + rule.epsilon + ":" + (gammaDependent ? rule.gamma : "") + ":" + resolution;
-      if (key === panel.key && !force) { updateProbe(panel); return; }
-      panel.key = key;
+      var key = rule.id + ":" + rule.epsilon + ":" + (gammaDependent ? rule.gamma : "");
+      // An unchanged field can reuse a completed image during a new preview.
+      if (key === panel.key && panel.resolution >= resolution && !force) { updateProbe(panel); return; }
       var domain = domains(def, rule);
       var vectorRegions = panel.main || def.id === "efficiency";
       if (vectorRegions) {
         panel.raster.setAttribute("href", regionImage(def, resolution));
       } else {
-        var canvas = document.createElement("canvas");
-        canvas.width = canvas.height = resolution;
-        var context = canvas.getContext("2d");
-        var pixels = context.createImageData(resolution, resolution);
-        for (var row = 0; row < resolution; row += 1) {
-          var y = domain[1][0] + 1 - (row + 0.5) / resolution;
-          for (var col = 0; col < resolution; col += 1) {
-            var x = domain[0][0] + (col + 0.5) / resolution;
-            var rgb = channels(def, x, y);
-            var offset = 4 * (row * resolution + col);
-            pixels.data[offset] = rgb[0]; pixels.data[offset + 1] = rgb[1]; pixels.data[offset + 2] = rgb[2];
-            pixels.data[offset + 3] = rgb.length > 3 ? rgb[3] : 255;
-          }
-        }
-        context.putImageData(pixels, 0, 0);
-        panel.raster.setAttribute("href", canvas.toDataURL());
+        var money = def.id === "revenue";
+        panel.raster.setAttribute("href", global.SvgUtils.createFieldRaster(resolution, function (x, y) {
+          return rule.field(def.id, domain[0][0] + x, domain[1][0] + y);
+        }, function (value) {
+          return visuals.signedChannels(value, def.extent,
+            money ? colors.red : colors.blue, money ? colors.green : colors.yellow);
+        }));
       }
+      panel.key = key;
+      panel.resolution = resolution;
       panel.raster.dataset.edgeRenderer = vectorRegions ? "vector-regions" : "raster";
       panel.raster.dataset.resolution = resolution;
       panel.ticks.replaceChildren();

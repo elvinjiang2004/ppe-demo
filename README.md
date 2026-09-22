@@ -11,6 +11,3 @@ Open [index.html](index.html) directly in a browser.
 explores my September 2026 paper with the same title. 
 
 The [paper PDF](assets/papers/Bilateral_Trade_with_a_Lying_Cost.pdf).
-
-The project owns its runtime assets. It does not load scripts, styles, or
-assets from the neighboring explorer.
