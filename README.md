@@ -4,7 +4,7 @@ A static, no-build collection of interactive modules for my personal economics
 research. MathJax 4 is vendored locally so mathematical typesetting works
 offline. The layout and organization follow Mechanism Design Explorer.
 
-**Public repository:** [ppe-demo](https://github.com/elvinjiang2004/ppe-demo)
+**Live site:** https://elvinjiang2004.github.io/ppe-demo/
 
 ## Open the site
 
