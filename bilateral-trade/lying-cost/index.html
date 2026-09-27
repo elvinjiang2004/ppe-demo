@@ -25,7 +25,7 @@
       <p>
         Myerson and Satterthwaite (1983) show that the efficient allocation rule
         is impossible to implement in the standard setting across all
-        buyer-seller distributions with a positive-length intersection. But
+        buyer-seller distributions whose supports have a positive-length intersection. But
         what if lying is costly for agents? Formally, I model a lying cost in
         a direct bargaining mechanism by a disutility of
         \(\gamma\lvert t-t'\rvert\) where \(t\) is an agent's true value and
@@ -46,10 +46,12 @@
       </p>
     </section>
     <section id="lying-cost-explorable" class="explorable explorable-divider" aria-label="Lying-cost mechanism preset">
-      <aside class="sandbox-toolbar" aria-label="Mechanism parameters">
+      <aside class="sandbox-toolbar parameter-presets" aria-label="Mechanism presets">
         <div id="preset-buttons" class="preset-buttons" role="group" aria-labelledby="preset-buttons-label">
           <span id="preset-buttons-label" class="preset-buttons-label">Presets:</span>
         </div>
+      </aside>
+      <aside class="sticky-parameter-bar" aria-label="Mechanism parameters">
         <div class="sandbox-action-row">
           <div class="range-group sandbox-parameter-control">
             <div class="range-label-row">
@@ -72,8 +74,8 @@
       </aside>
       <div class="color-legends" role="group" aria-label="Plot color scales">
         <div class="color-legend"><span class="color-legend-title">Allocation</span><span class="color-scale-bar allocation-gradient"></span><div class="color-scale-ticks"><span>0</span><span>1</span></div></div>
-        <div class="color-legend"><span class="color-legend-title">Payment / revenue</span><span class="color-scale-bar payment-gradient"></span><div class="color-scale-ticks"><span>Negative</span><span>0</span><span>Positive</span></div></div>
-        <div class="color-legend"><span class="color-legend-title">Utility</span><span class="color-scale-bar utility-gradient"></span><div class="color-scale-ticks"><span>Negative</span><span>0</span><span>Positive</span></div></div>
+        <div class="color-legend"><span class="color-legend-title">Effect on revenue</span><span class="color-scale-bar payment-gradient"></span><div class="color-scale-ticks"><span>−1</span><span>0</span><span>+1</span></div></div>
+        <div class="color-legend"><span class="color-legend-title">Utility</span><span class="color-scale-bar utility-gradient"></span><div class="color-scale-ticks"><span>−1</span><span>0</span><span>+1</span></div></div>
       </div>
       <div id="surfaces" class="surface-editor-grid" aria-label="Allocation and payment rules"></div>
       <div id="diagnostics" class="diagnostic-panel-grid sandbox-diagnostic-grid" aria-label="Mechanism diagnostics"></div>
@@ -81,8 +83,8 @@
       <p id="live-status" class="sr-only" role="status" aria-live="polite"></p>
       <p id="probe-announcement" class="sr-only" aria-live="polite"></p>
     </section>
-    <section class="derivation mechanism-details" aria-labelledby="mechanism-details-title">
-      <h2 id="mechanism-details-title">Mechanism Details</h2>
+    <details class="derivation mechanism-details" aria-labelledby="mechanism-details-title">
+      <summary id="mechanism-details-title">Mechanism Details</summary>
       <div
         class="mechanism-details-table-region"
         role="region"
@@ -114,7 +116,7 @@
           </tbody>
         </table>
       </div>
-    </section>
+    </details>
     <section class="notes" aria-labelledby="notes-title">
       <h2 id="notes-title">Notes</h2>
       <!-- Notes reserved for the author. -->
@@ -125,6 +127,12 @@
         <li>
           Jiang, Elvin. <cite><a href="../../assets/papers/Bilateral_Trade_with_a_Lying_Cost.pdf">Bilateral Trade with a Lying Cost</a></cite>.
           September 2026.
+        </li>
+        <li>
+          Myerson, Roger B., and Mark A. Satterthwaite. “Efficient Mechanisms
+          for Bilateral Trading.” <em>Journal of Economic Theory</em> 29, no. 2
+          (1983): 265–281.
+          <a href="https://doi.org/10.1016/0022-0531(83)90048-0">https://doi.org/10.1016/0022-0531(83)90048-0</a>.
         </li>
       </ul>
     </section>

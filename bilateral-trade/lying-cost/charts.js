@@ -6,13 +6,13 @@
   var SIZE = LAYOUT.right - LAYOUT.left;
   var definitions = [
     { id: "q", title: "Allocation rule, \\(q(v,c)\\)", extent: 1, symbol: "q" },
-    { id: "pB", title: "Buyer payment, \\(p_B(v,c)\\)", extent: 1, symbol: "p", subscript: "B" },
-    { id: "pS", title: "Seller payment, \\(p_S(v,c)\\)", extent: 1, symbol: "p", subscript: "S" },
-    { id: "buyerIC", title: "Buyer interim-deviation payoff, \\(U_B(v,r)\\)", extent: 2, domain: "buyer", symbol: "U", subscript: "B" },
-    { id: "sellerIC", title: "Seller interim-deviation payoff, \\(U_S(c,s)\\)", extent: 2, domain: "seller", symbol: "U", subscript: "S" },
-    { id: "revenue", title: "Net revenue, \\(R(v,c)\\)", extent: 1, symbol: "R" },
-    { id: "buyerPayoff", title: "Buyer truthful payoff, \\(u_B(v,c)\\)", extent: 0.5, symbol: "u", subscript: "B" },
-    { id: "sellerPayoff", title: "Seller truthful payoff, \\(u_S(v,c)\\)", extent: 0.5, symbol: "u", subscript: "S" },
+    { id: "pB", title: "Buyer payment, \\(p_B(v,c)\\)", extent: visuals.SIGNED_COLOR_EXTENT, symbol: "p", subscript: "B" },
+    { id: "pS", title: "Seller payment, \\(p_S(v,c)\\)", extent: visuals.SIGNED_COLOR_EXTENT, symbol: "p", subscript: "S" },
+    { id: "buyerIC", title: "Buyer interim-deviation payoff, \\(U_B(v,r)\\)", extent: visuals.SIGNED_COLOR_EXTENT, domain: "buyer", symbol: "U", subscript: "B" },
+    { id: "sellerIC", title: "Seller interim-deviation payoff, \\(U_S(c,s)\\)", extent: visuals.SIGNED_COLOR_EXTENT, domain: "seller", symbol: "U", subscript: "S" },
+    { id: "revenue", title: "Net revenue, \\(R(v,c)\\)", extent: visuals.SIGNED_COLOR_EXTENT, symbol: "R" },
+    { id: "buyerPayoff", title: "Buyer truthful payoff, \\(u_B(v,c)\\)", extent: visuals.SIGNED_COLOR_EXTENT, symbol: "u", subscript: "B" },
+    { id: "sellerPayoff", title: "Seller truthful payoff, \\(u_S(v,c)\\)", extent: visuals.SIGNED_COLOR_EXTENT, symbol: "u", subscript: "S" },
     { id: "efficiency", title: "Efficiency", extent: 1, label: "q - q*" }
   ];
   function number(x) {
@@ -114,6 +114,7 @@
       var tradePoints = edge + ",1 1,1 1," + edge;
       var noTradePoints = "0,0 1,0 1," + edge + " " + edge + ",1 0,1";
       var content;
+      var paymentColor = def.id === "pS" ? colors.red : colors.green;
       if (def.id === "q" || def.id === "efficiency") {
         content = '<rect width="1" height="1" fill="rgb(' + colors.neutral.join(",") + ')"/>' +
           '<polygon points="' + tradePoints + '" fill="rgb(' + colors.blue.join(",") + ')"/>';
@@ -122,8 +123,8 @@
         // gradient gives this linear field and its exact boundary at every size.
         content = '<defs><linearGradient id="' + prefix + 'midpoint" gradientUnits="userSpaceOnUse" x1="0" y1="' +
           rule.sellerSupport[1] + '" x2="1" y2="' + (rule.sellerSupport[1] - 1) + '">' +
-          '<stop offset="0" stop-color="rgb(' + colors.green.join(",") + ')" stop-opacity="0"/>' +
-          '<stop offset="1" stop-color="rgb(' + colors.green.join(",") + ')" stop-opacity="1"/>' +
+          '<stop offset="0" stop-color="rgb(' + paymentColor.join(",") + ')" stop-opacity="0"/>' +
+          '<stop offset="1" stop-color="rgb(' + paymentColor.join(",") + ')" stop-opacity="' + (1 / def.extent) + '"/>' +
           '</linearGradient></defs><polygon points="' + tradePoints + '" fill="url(#' + prefix + 'midpoint)"/>';
       } else {
         // Each payment branch varies along one axis. Sample that smooth color
@@ -140,7 +141,7 @@
               rule.sellerSupport[1] - (i + 0.5) / resolution;
             var value = buyer ? (trades ? coordinate : 0) - rule.buyerRent(coordinate) :
               (trades ? coordinate : 0) + rule.sellerRent(coordinate);
-            var rgba = visuals.signedChannels(value, def.extent, colors.red, colors.green);
+            var rgba = visuals.signedChannels(def.id === "pS" ? -value : value, def.extent, colors.red, colors.green);
             pixels.data.set(rgba, i * 4);
           }
           context.putImageData(pixels, 0, 0);
@@ -216,9 +217,13 @@
     function updateStatuses() {
       var t = rule.totals;
       var statuses = {
-        buyerIC: ["BIC: " + (t.buyerBIC ? "passes" : "fails"),
+        buyerIC: ["BIC: " + (t.buyerBIC ? "passes" : "fails") +
+          " (best-response path (orange points) " +
+          (t.buyerBIC ? "lies on" : "does not lie entirely on") + " v′ = v)",
           "DSIC: " + (t.buyerDSIC ? "passes" : "fails") + " (maximum deviation gain = " + number(t.buyerMaximumExPostGain) + ")"],
-        sellerIC: ["BIC: " + (t.sellerBIC ? "passes" : "fails"),
+        sellerIC: ["BIC: " + (t.sellerBIC ? "passes" : "fails") +
+          " (best-response path (orange points) " +
+          (t.sellerBIC ? "lies on" : "does not lie entirely on") + " c′ = c)",
           "DSIC: " + (t.sellerDSIC ? "passes" : "fails") + " (maximum deviation gain = " + number(t.sellerMaximumExPostGain) + ")"],
         revenue: ["Ex-ante BB: " + (t.exAnteBB ? "passes" : "fails") + " (expected revenue = " + number(t.revenue) + ")",
           "Ex-post BB: " + (t.exPostBB ? "passes" : "fails") + " (largest deficit = " + number(t.largestDeficit) + ")"],
