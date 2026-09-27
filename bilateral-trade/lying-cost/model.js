@@ -122,7 +122,7 @@
     "minimum-rent": Object.freeze({ label: "Minimum-rent efficient mechanism", create: function (parameters) {
       return createRule(parameters, "minimum-rent");
     } }),
-    "split-the-difference": Object.freeze({ label: "Split-the-difference", create: function (parameters) {
+    "split-the-difference": Object.freeze({ label: "Split-the-surplus", create: function (parameters) {
       return createRule(parameters, "split-the-difference");
     } })
   });
