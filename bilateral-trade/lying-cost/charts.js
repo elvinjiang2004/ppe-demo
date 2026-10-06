@@ -119,13 +119,15 @@
         content = '<rect width="1" height="1" fill="rgb(' + colors.neutral.join(",") + ')"/>' +
           '<polygon points="' + tradePoints + '" fill="rgb(' + colors.blue.join(",") + ')"/>';
       } else if (rule.id === "split-the-difference") {
-        // In the trade triangle, the midpoint payment is (v+c)/2. A vector
-        // gradient gives this linear field and its exact boundary at every size.
-        content = '<defs><linearGradient id="' + prefix + 'midpoint" gradientUnits="userSpaceOnUse" x1="0" y1="' +
-          rule.sellerSupport[1] + '" x2="1" y2="' + (rule.sellerSupport[1] - 1) + '">' +
+        // In normalized image coordinates, payment is k*x+(1-k)*(b-y).
+        // Gradient direction (k,-(1-k))/normSquared makes opacity equal price.
+        var normSquared = rule.k * rule.k + (1 - rule.k) * (1 - rule.k);
+        content = '<defs><linearGradient id="' + prefix + 'auction-price" gradientUnits="userSpaceOnUse" x1="0" y1="' +
+          rule.sellerSupport[1] + '" x2="' + (rule.k / normSquared) + '" y2="' +
+          (rule.sellerSupport[1] - (1 - rule.k) / normSquared) + '">' +
           '<stop offset="0" stop-color="rgb(' + paymentColor.join(",") + ')" stop-opacity="0"/>' +
           '<stop offset="1" stop-color="rgb(' + paymentColor.join(",") + ')" stop-opacity="' + (1 / def.extent) + '"/>' +
-          '</linearGradient></defs><polygon points="' + tradePoints + '" fill="url(#' + prefix + 'midpoint)"/>';
+          '</linearGradient></defs><polygon points="' + tradePoints + '" fill="url(#' + prefix + 'auction-price)"/>';
       } else {
         // Each payment branch varies along one axis. Sample that smooth color
         // field separately, then let vector clips draw the exact jump at v=c.
@@ -162,8 +164,12 @@
     function draw(panel, resolution, force) {
       var def = panel.def;
       // The rule identity must invalidate every panel when a curated preset changes.
-      var gammaDependent = rule.id === "minimum-rent" ? def.id !== "q" && def.id !== "efficiency" : Boolean(def.domain);
-      var key = rule.id + ":" + rule.epsilon + ":" + (gammaDependent ? rule.gamma : "");
+      var minimum = rule.id === "minimum-rent";
+      var buyerDependent = def.id === "buyerIC" || (minimum && ["pB", "buyerPayoff", "revenue"].includes(def.id));
+      var sellerDependent = def.id === "sellerIC" || (minimum && ["pS", "sellerPayoff", "revenue"].includes(def.id));
+      var kDependent = !minimum && !["q", "efficiency", "revenue"].includes(def.id);
+      var key = [rule.id, rule.epsilon, buyerDependent ? rule.gammaB : "",
+        sellerDependent ? rule.gammaS : "", kDependent ? rule.k : ""].join(":");
       // An unchanged field can reuse a completed image during a new preview.
       if (key === panel.key && panel.resolution >= resolution && !force) { updateProbe(panel); return; }
       var domain = domains(def, rule);

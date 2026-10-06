@@ -1,6 +1,8 @@
 (function () {
   "use strict";
-  var state = { gamma: 0.25, epsilon: 1 };
+  var state = { gammaB: 0.25, gammaS: 0.25, epsilon: 1, k: 0.5 };
+  var parameters = ["gammaB", "gammaS", "epsilon", "k"];
+  var labels = { gammaB: "buyer lying cost", gammaS: "seller lying cost", epsilon: "support overlap", k: "buyer-report weight" };
   var activePreset = "minimum-rent";
   var pending = null;
   var frame = null;
@@ -11,22 +13,26 @@
   var charts = LyingCostCharts.create(document.getElementById("surfaces"), document.getElementById("diagnostics"));
   function set(id, text) { document.getElementById(id).textContent = text; }
   function controls() {
-    ["gamma", "epsilon"].forEach(function (name) {
+    parameters.forEach(function (name) {
       document.getElementById(name + "-slider").value = state[name];
       document.getElementById(name + "-number").value = state[name];
     });
+    document.getElementById("k-control").hidden = activePreset !== "split-the-difference";
   }
   function render(resolution) {
     rule = LyingCostModel.create(state, activePreset);
     charts.render(rule, resolution);
     var t = rule.totals, format = charts.number;
-    set("live-status", LyingCostModel.presets[activePreset].label + ". Gamma " + format(state.gamma) +
+    set("live-status", LyingCostModel.presets[activePreset].label + ". Buyer lying cost " + format(state.gammaB) + "; seller lying cost " + format(state.gammaS) +
+      (activePreset === "split-the-difference" ? "; k " + format(state.k) : "") +
       "; epsilon " + format(state.epsilon) + ". BIC: " + (t.buyerBIC && t.sellerBIC ? "passes" : "fails") +
       ". DSIC: " + (t.buyerDSIC && t.sellerDSIC ? "passes" : "fails") +
       ". Expected revenue under truthful reporting " + format(t.revenue) + ".");
     root.dataset.preset = activePreset;
     root.dataset.implementable = t.implementable;
-    root.dataset.gamma = state.gamma;
+    root.dataset.gammaB = state.gammaB;
+    root.dataset.gammaS = state.gammaS;
+    root.dataset.k = state.k;
     root.dataset.epsilon = state.epsilon;
     root.dataset.liveRenderCount = ++count;
   }
@@ -52,7 +58,7 @@
       charts.render(rule, 160);
     });
   }
-  ["gamma", "epsilon"].forEach(function (name) {
+  parameters.forEach(function (name) {
     var slider = document.getElementById(name + "-slider");
     var input = document.getElementById(name + "-number");
     slider.addEventListener("input", function () { input.value = slider.value; schedule(name, Number(slider.value)); });
@@ -63,7 +69,7 @@
       var value = input.valueAsNumber;
       if (!Number.isFinite(value) || value < 0 || value > 1) {
         input.setAttribute("aria-invalid", "true");
-        set("input-error", "Enter a number from 0 to 1 for " + name + ".");
+        set("input-error", "Enter a number from 0 to 1 for " + labels[name] + ".");
         return;
       }
       input.removeAttribute("aria-invalid");

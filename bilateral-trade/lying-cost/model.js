@@ -1,4 +1,4 @@
-/* Jiang (September 2026), Sections 3-5 and Propositions 4-5.
+/* Jiang (September 2026, current draft 9), Sections 3-5 and Propositions 4-5.
    Both presets use direct reports and include lying costs in IC diagnostics.
    Analytic best reports and ex-post deviation bounds: see architecture.md. */
 (function (global) {
@@ -18,74 +18,97 @@
     }));
   }
   function createRule(parameters, id) {
-    var gamma = parameters.gamma;
+    // Keep the symmetric API for existing callers; the page uses separate costs.
+    var gammaB = parameters.gammaB === undefined ? parameters.gamma : parameters.gammaB;
+    var gammaS = parameters.gammaS === undefined ? parameters.gamma : parameters.gammaS;
+    var k = parameters.k === undefined ? 0.5 : parameters.k;
     var epsilon = parameters.epsilon;
-    validate(gamma, "gamma");
+    validate(gammaB, "gammaB");
+    validate(gammaS, "gammaS");
+    validate(k, "k");
     validate(epsilon, "epsilon");
     var minimum = id === "minimum-rent";
     var a = 1 - epsilon;
     var b = 2 - epsilon;
     var buyerSupport = Object.freeze([0, 1]);
     var sellerSupport = Object.freeze([a, b]);
-    var length = positive(epsilon - gamma);
+    var lengthB = positive(epsilon - gammaB);
+    var lengthS = positive(epsilon - gammaS);
     var welfare = Math.pow(epsilon, 3) / 6;
-    var individualRent = minimum ? Math.pow(length, 3) / 6 : welfare / 2;
-    var revenue = minimum ? welfare - 2 * individualRent : 0;
+    var buyerUtility = minimum ? Math.pow(lengthB, 3) / 6 : (1 - k) * welfare;
+    var sellerUtility = minimum ? Math.pow(lengthS, 3) / 6 : k * welfare;
+    // This scalar threshold is only a benchmark on the symmetric slice.
     var threshold = epsilon * THRESHOLD_FACTOR;
-    var bic = minimum || gamma >= epsilon / 2;
-    var dsicThreshold = epsilon === 0 ? 0 : minimum ? 1 : 0.5;
-    var maximumExPostGain = minimum ?
-      (1 - gamma) * epsilon - length * length / 2 : positive(0.5 - gamma) * epsilon;
-    var maximumInterimGain = minimum ? 0 : Math.pow(positive(epsilon - 2 * gamma), 2) / 12;
+    // Factor 1-(1-lowCost)^3 before subtracting the other rent. Adding
+    // a tiny positive rent to 1 would otherwise hide a real deficit.
+    var lowCost = epsilon === 0 ? 0 : Math.min(1, Math.min(gammaB, gammaS) / epsilon);
+    var highRent = epsilon === 0 ? 0 : Math.min(lengthB, lengthS) / epsilon;
+    var normalizedBalance = lowCost * (3 - lowCost * (3 - lowCost)) - Math.pow(highRent, 3);
+    var implementable = epsilon === 0 || (gammaB === gammaS ? gammaB >= threshold : normalizedBalance >= 0);
+    var revenue = minimum ? welfare * normalizedBalance : 0;
+    if (minimum && epsilon > 0 && gammaB === gammaS && gammaB < epsilon) {
+      // Factor around the symmetric threshold, including literal equality.
+      var root = 1 - THRESHOLD_FACTOR, rentRatio = lengthB / epsilon;
+      revenue = 2 * welfare * ((gammaB - threshold) / epsilon) *
+        (root * root + root * rentRatio + rentRatio * rentRatio);
+    }
+    var buyerBIC = minimum || gammaB >= k * epsilon;
+    var sellerBIC = minimum || gammaS >= (1 - k) * epsilon;
+    var buyerDSICThreshold = epsilon === 0 ? 0 : minimum ? 1 : k;
+    var sellerDSICThreshold = epsilon === 0 ? 0 : minimum ? 1 : 1 - k;
     function q(v, c) { return v >= c ? 1 : 0; }
     function buyerAllocation(v) { return positive(v - a); }
     function sellerAllocation(c) { return positive(1 - c); }
     // These are truthful interim utilities; only the first preset minimizes them.
     function buyerRent(v) {
-      return minimum ? Math.pow(positive(v - a - gamma), 2) / 2 : Math.pow(buyerAllocation(v), 2) / 4;
+      return minimum ? Math.pow(positive(v - a - gammaB), 2) / 2 : (1 - k) * Math.pow(buyerAllocation(v), 2) / 2;
     }
     function sellerRent(c) {
-      return minimum ? Math.pow(positive(1 - c - gamma), 2) / 2 : Math.pow(sellerAllocation(c), 2) / 4;
+      return minimum ? Math.pow(positive(1 - c - gammaS), 2) / 2 : k * Math.pow(sellerAllocation(c), 2) / 2;
     }
-    function pB(v, c) { return minimum ? v * q(v, c) - buyerRent(v) : (v + c) * q(v, c) / 2; }
-    function pS(v, c) { return minimum ? c * q(v, c) + sellerRent(c) : (v + c) * q(v, c) / 2; }
-    function buyerPayoff(v, c) { return minimum ? buyerRent(v) : positive(v - c) / 2; }
-    function sellerPayoff(v, c) { return minimum ? sellerRent(c) : positive(v - c) / 2; }
+    function pB(v, c) { return minimum ? v * q(v, c) - buyerRent(v) : (k * v + (1 - k) * c) * q(v, c); }
+    function pS(v, c) { return minimum ? c * q(v, c) + sellerRent(c) : (k * v + (1 - k) * c) * q(v, c); }
+    function buyerPayoff(v, c) { return minimum ? buyerRent(v) : (1 - k) * positive(v - c); }
+    function sellerPayoff(v, c) { return minimum ? sellerRent(c) : k * positive(v - c); }
     function buyerPayment(v) { return v * buyerAllocation(v) - buyerRent(v); }
     function sellerPayment(c) { return c * sellerAllocation(c) + sellerRent(c); }
     function buyerDeviation(v, r) {
-      return (v - r) * buyerAllocation(r) + buyerRent(r) - gamma * Math.abs(v - r);
+      return (v - r) * buyerAllocation(r) + buyerRent(r) - gammaB * Math.abs(v - r);
     }
     function sellerDeviation(c, s) {
-      return (s - c) * sellerAllocation(s) + sellerRent(s) - gamma * Math.abs(c - s);
+      return (s - c) * sellerAllocation(s) + sellerRent(s) - gammaS * Math.abs(c - s);
     }
     function buyerExPostDeviation(v, r, c) {
-      return (v - r) * q(r, c) + buyerPayoff(r, c) - gamma * Math.abs(v - r);
+      return (v - r) * q(r, c) + buyerPayoff(r, c) - gammaB * Math.abs(v - r);
     }
     function sellerExPostDeviation(c, s, v) {
-      return (s - c) * q(v, s) + sellerPayoff(v, s) - gamma * Math.abs(c - s);
+      return (s - c) * q(v, s) + sellerPayoff(v, s) - gammaS * Math.abs(c - s);
     }
-    function buyerBestReport(v) { return minimum ? v : v - positive(v - a - 2 * gamma) / 3; }
-    function sellerBestReport(c) { return minimum ? c : c + positive(1 - c - 2 * gamma) / 3; }
+    function buyerBestReport(v) { return minimum ? v : v - positive(k * (v - a) - gammaB) / (1 + k); }
+    function sellerBestReport(c) { return minimum ? c : c + positive((1 - k) * (1 - c) - gammaS) / (2 - k); }
     var totals = Object.freeze({
       tradeProbability: epsilon * epsilon / 2,
-      welfare: welfare, buyerUtility: individualRent, sellerUtility: individualRent,
-      buyerPayment: minimum ? epsilon * epsilon / 2 - Math.pow(epsilon, 3) / 6 - individualRent :
-        epsilon * epsilon / 2 - Math.pow(epsilon, 3) / 4,
-      sellerPayment: minimum ? epsilon * epsilon / 2 - Math.pow(epsilon, 3) / 3 + individualRent :
-        epsilon * epsilon / 2 - Math.pow(epsilon, 3) / 4,
+      welfare: welfare, buyerUtility: buyerUtility, sellerUtility: sellerUtility,
+      buyerPayment: minimum ? epsilon * epsilon / 2 - welfare - buyerUtility :
+        epsilon * epsilon / 2 - (2 - k) * welfare,
+      sellerPayment: minimum ? epsilon * epsilon / 2 - 2 * welfare + sellerUtility :
+        epsilon * epsilon / 2 - (2 - k) * welfare,
       revenue: revenue, threshold: threshold,
       // Allocation implementability is independent of the selected payment rule.
-      implementable: gamma >= threshold,
-      implementsEfficientAllocation: bic && (!minimum || gamma >= threshold),
-      exAnteBB: !minimum || gamma >= threshold,
-      exPostBB: !minimum || gamma >= epsilon,
-      largestDeficit: minimum ? length * length / 2 : 0,
-      buyerBIC: bic, sellerBIC: bic, bicThreshold: minimum ? 0 : epsilon / 2,
-      buyerDSIC: gamma >= dsicThreshold, sellerDSIC: gamma >= dsicThreshold,
-      dsicThreshold: dsicThreshold,
-      buyerMaximumInterimGain: maximumInterimGain, sellerMaximumInterimGain: maximumInterimGain,
-      buyerMaximumExPostGain: maximumExPostGain, sellerMaximumExPostGain: maximumExPostGain,
+      implementable: implementable,
+      implementsEfficientAllocation: buyerBIC && sellerBIC && (!minimum || implementable),
+      exAnteBB: !minimum || implementable,
+      exPostBB: !minimum || (gammaB >= epsilon && gammaS >= epsilon),
+      largestDeficit: minimum ? Math.max(lengthB * lengthB, lengthS * lengthS) / 2 : 0,
+      buyerBIC: buyerBIC, sellerBIC: sellerBIC,
+      buyerBICThreshold: minimum ? 0 : k * epsilon,
+      sellerBICThreshold: minimum ? 0 : (1 - k) * epsilon,
+      buyerDSIC: gammaB >= buyerDSICThreshold, sellerDSIC: gammaS >= sellerDSICThreshold,
+      buyerDSICThreshold: buyerDSICThreshold, sellerDSICThreshold: sellerDSICThreshold,
+      buyerMaximumInterimGain: minimum ? 0 : Math.pow(positive(k * epsilon - gammaB), 2) / (2 * (1 + k)),
+      sellerMaximumInterimGain: minimum ? 0 : Math.pow(positive((1 - k) * epsilon - gammaS), 2) / (2 * (2 - k)),
+      buyerMaximumExPostGain: minimum ? (1 - gammaB) * epsilon - lengthB * lengthB / 2 : positive(k - gammaB) * epsilon,
+      sellerMaximumExPostGain: minimum ? (1 - gammaS) * epsilon - lengthS * lengthS / 2 : positive(1 - k - gammaS) * epsilon,
       buyerInterimIR: true, sellerInterimIR: true,
       buyerExPostIR: true, sellerExPostIR: true,
       expectedEfficiencyLoss: 0, largestEfficiencyLoss: 0
@@ -105,7 +128,7 @@
       }
     }
     return Object.freeze({
-      id: id, gamma: gamma, epsilon: epsilon,
+      id: id, gammaB: gammaB, gammaS: gammaS, k: k, epsilon: epsilon,
       buyerSupport: buyerSupport, sellerSupport: sellerSupport,
       q: q, pB: pB, pS: pS, buyerAllocation: buyerAllocation, sellerAllocation: sellerAllocation,
       buyerRent: buyerRent, sellerRent: sellerRent,
@@ -113,8 +136,8 @@
       buyerDeviation: buyerDeviation, sellerDeviation: sellerDeviation,
       buyerExPostDeviation: buyerExPostDeviation, sellerExPostDeviation: sellerExPostDeviation,
       buyerBestReport: buyerBestReport, sellerBestReport: sellerBestReport,
-      buyerBestReportTrace: reportTrace(buyerSupport, minimum ? undefined : a + 2 * gamma, buyerBestReport),
-      sellerBestReportTrace: reportTrace(sellerSupport, minimum ? undefined : 1 - 2 * gamma, sellerBestReport),
+      buyerBestReportTrace: reportTrace(buyerSupport, minimum || k === 0 ? undefined : a + gammaB / k, buyerBestReport),
+      sellerBestReportTrace: reportTrace(sellerSupport, minimum || k === 1 ? undefined : 1 - gammaS / (1 - k), sellerBestReport),
       field: field, totals: totals
     });
   }
@@ -122,7 +145,7 @@
     "minimum-rent": Object.freeze({ label: "Minimum-rent efficient mechanism", create: function (parameters) {
       return createRule(parameters, "minimum-rent");
     } }),
-    "split-the-difference": Object.freeze({ label: "Split-the-surplus", create: function (parameters) {
+    "split-the-difference": Object.freeze({ label: "k-Double-Auction", create: function (parameters) {
       return createRule(parameters, "split-the-difference");
     } })
   });

@@ -26,7 +26,8 @@ The menu currently contains one category:
 
 The module explores my September 2026 paper with the same title. The
 [paper PDF](assets/papers/Bilateral_Trade_with_a_Lying_Cost.pdf) is included
-locally for offline reading.
+locally for offline reading (current draft 9, refreshed October 5, 2026).
+The demo has separate buyer/seller lying costs and an adjustable k-double auction.
 
 ## Files
 
