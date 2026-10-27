@@ -24,9 +24,9 @@ The menu currently contains one category:
 - **Bilateral Trade**
   - [Bilateral Trade with a Lying Cost](bilateral-trade/lying-cost/index.html)
 
-The module explores my September 2026 paper with the same title. The
-[paper PDF](assets/papers/Bilateral_Trade_with_a_Lying_Cost.pdf) is included
-locally for offline reading (current draft 9, refreshed October 5, 2026).
+The module explores my September 2026 paper, *Bilateral Trade with Lying Costs*. The
+[paper PDF](assets/papers/Bilateral_Trade_with_Lying_Costs.pdf) is included
+locally for offline reading (snapshot refreshed October 19, 2026).
 The demo has separate buyer/seller lying costs and an adjustable k-double auction.
 
 ## Files
@@ -37,7 +37,7 @@ The demo has separate buyer/seller lying costs and an adjustable k-double auctio
 - `styles.css` — ordered entry point for the focused stylesheets in `css/`.
 - `css/` — theme, shared page/control styling, chart layouts, and responsive rules.
 - `assets/mathjax/` — vendored MathJax 4 TeX-to-SVG build and offline assets.
-- `assets/papers/Bilateral_Trade_with_a_Lying_Cost.pdf` — the module's source paper.
+- `assets/papers/Bilateral_Trade_with_Lying_Costs.pdf` — the module's source paper.
 - `js/mathjax-config.js` — shared local MathJax configuration.
 - `js/mathjax-runtime.js` — shared initial and dynamic MathJax lifecycle.
 - `js/math-utils.js` — shared numeric helpers.
